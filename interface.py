@@ -3,43 +3,49 @@ from flaskext.mysql import MySQL
 import mysql.connector
 app = Flask(__name__)
 
-# mysql = MySQL(app)
-conn = mysql.connector.connect(user ='root', password='---.', host='localhost', database='repolist', port='3306')
+# Connect to MySQL database
+conn = mysql.connector.connect(user ='root', password='***.', host='localhost', database='repolist', port='3306')
 cur = conn.cursor()
 
-# @app.before_request
-# def before_request():
-#     print('connecting... ')
-#     global conn
-#     conn = sqlite3.connect("repoList.db")
-#     print('connected!')
-#
-# @app.teardown_request
-# def teardown_request(exception):
-#     if hasattr(g, 'db'):
-#         conn.close()
 
+# Runs when the notes 'save' button is clicked; edits notes column in database.
+# todo: all. Currently just reloads page.
 
 @app.route('/')
 def notes():
+    # LOAD PAGE: homepage
     cur.execute("SELECT * FROM rl")
     data = cur.fetchall()
     return render_template('interface.html', data=data)
 
 
-@app.route('/')
+# Runs upon clicking 'send comment.' Edits comment_sent col in db.
+# todo: change structure of db for comment_sent flags
+#       connect to PRcommenter.py
+
+@app.route('/', methods=['GET', 'POST'])
 def send_comment():
-    name = request.form['name']
-    cur.execute("UPDATE rl SET 1 WHERE repo=%s" % name)
+    repo = request.form['send_comment_button']                              # gets repo name from value of send_comment_button button
+    cur.execute("UPDATE rl SET comment_sent=1 WHERE repo=%s", (repo,))      # changes comment_sent value to 1 (flags for PRcommenter.py)
+    conn.commit()                                                           # saves changes
+    print(cur.rowcount, "rows updated.")                                    # terminal notification to inform how many rows (repos) have been altered
+    # LOAD PAGE: homepage
     cur.execute("SELECT * FROM rl")
     data = cur.fetchall()
     return render_template('interface.html', data=data)
 
 
-@app.route('/')
+# Runs upon clicking 'don't send comment.' Edits comment_sent col in db.
+# todo: mirror send_comment function above
+#       add a separate page for repos with this flag
+
+@app.route('/', methods=['GET', 'POST'])
 def no_send_comment():
-    name = request.form['name']
-    cur.execute("UPDATE rl SET 3 WHERE repo=%s" % name)
+    repo = request.form['no_send_comment_button']                           # gets repo name from value of no_send_comment_button button
+    cur.execute("UPDATE rl SET comment_sent=3 WHERE repo=%s", (repo,))      # changes comment_sent value to 3 (flags for moving to another list)
+    conn.commit()                                                           # saves changes
+    print(cur.rowcount, "updated.")                                         # terminal notification to inform how many rows (repos) have been altered
+    # LOAD PAGE: homepage
     cur.execute("SELECT * FROM rl")
     data = cur.fetchall()
     return render_template('interface.html', data=data)

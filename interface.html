@@ -1,37 +1,44 @@
 
 <html>
 <body>
-
   <table id='tbl' border=1 width="100%">
+    <!-- headings -->
     <tr>
-      <th style="width:13%">repo</th>
-      <th style="width:13%">pr1</th>
-      <th style="width:13%">pr2</th>
-      <th style="width:13%" onclick="sortTable(3)">score</th>
-      <th style="width:10%">Send comment?</th>
-      <th style="width:20%">Notes</th>
+      <th name='repo' style="width:13%">repo</th>
+      <th>pr1</th>
+      <th>pr2</th>
+      <th onclick="sortTable(3)">score</th>
+      <th>Send comment?</th>
+      <th>Notes</th>
     </tr>
+    <!-- loop through rows (repos), showing db as a table on page -->
     {% for row in data %}
     <tr>
-      <td>
-        <a href="https://github.com/{{row[0]}}">{{row[0]}}</a>
-      </td>
-      <td>{{row[1]}}</td>
-      <td>{{row[2]}}</td>
+      <!-- repo name, links to repo page -->
+      <td><a href="https://github.com/{{row[0]}}">{{row[0]}}</a></td>
+      <!-- PR #1, links to PR1 page -->
+      <td><a href="https://github.com/{{row[0]}}/pull/{{row[1]}}">{{row[1]}}<a/></td>
+      <!-- PR #2, links to PR2 page -->
+      <td><a href="https://github.com/{{row[0]}}/pull/{{row[2]}}">{{row[2]}}<a/></td>
+      <!-- similarity score -->
       <td>{{row[3]}}</td>
+      <!-- send/don't send comment buttons -->
       <td>
-        <form name="send_comment" method=POST action="{{ url_for('send_comment') }}">
-          <button name="name" value=1>Send comment</button>
+        <form method=POST action="{{ url_for('send_comment') }}">
+          <button value="{{row[0]}}" name="send_comment_button">Send comment</button>
           <p>
         </form>
-        <form name="no_send_comment" method=POST action="{{ url_for('no_send_comment') }}">
-          <button name="name" value=3>Remove</button>
+        <form method=POST action="{{ url_for('no_send_comment') }}">
+          <button value="{{row[0]}}" name="no_send_comment_button">Don't send comment</button>
         </form>
       </td>
+      <!-- note box, save button -->
       <td>
         <textarea rows="4">
+          <!-- if there are not yet any notes, display filler -->
           {% if row[15] == "empty" %}
             Input notes here...
+          <!-- if there are already notes, display them -->
           {% else %}
             {{row[15]}}
           {% endif %}
@@ -42,6 +49,5 @@
     </tr>
     {% endfor %}
   </table>
-
 </body>
 </html>
