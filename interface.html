@@ -30,15 +30,16 @@
         </form>
         <form method=POST action="{{ url_for('no_send_comment') }}">
           <button value="{{row[0]}}" name="no_send_comment_button">Don't send comment</button>
+          <p>
         </form>
       </td>
       <!-- note box, save button -->
       <td>
+        <!-- if there are not yet any notes, display filler -->
+        <!-- else (if there are already notes), display them -->
         <textarea rows="4">
-          <!-- if there are not yet any notes, display filler -->
           {% if row[15] == "empty" %}
             Input notes here...
-          <!-- if there are already notes, display them -->
           {% else %}
             {{row[15]}}
           {% endif %}

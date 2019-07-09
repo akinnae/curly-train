@@ -23,7 +23,7 @@ def notes():
 # todo: change structure of db for comment_sent flags
 #       connect to PRcommenter.py
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/home-sc', methods=['POST'])
 def send_comment():
     repo = request.form['send_comment_button']                              # gets repo name from value of send_comment_button button
     cur.execute("UPDATE rl SET comment_sent=1 WHERE repo=%s", (repo,))      # changes comment_sent value to 1 (flags for PRcommenter.py)
@@ -36,15 +36,15 @@ def send_comment():
 
 
 # Runs upon clicking 'don't send comment.' Edits comment_sent col in db.
-# todo: mirror send_comment function above
+# todo: determine why this func isn't working even though send_comment is
 #       add a separate page for repos with this flag
 
-@app.route('/', methods=['GET', 'POST'])
+@app.route('/home-no-sc', methods=['POST'])
 def no_send_comment():
     repo = request.form['no_send_comment_button']                           # gets repo name from value of no_send_comment_button button
     cur.execute("UPDATE rl SET comment_sent=3 WHERE repo=%s", (repo,))      # changes comment_sent value to 3 (flags for moving to another list)
     conn.commit()                                                           # saves changes
-    print(cur.rowcount, "updated.")                                         # terminal notification to inform how many rows (repos) have been altered
+    print(cur.rowcount, "rows updated.")                                    # terminal notification to inform how many rows (repos) have been altered
     # LOAD PAGE: homepage
     cur.execute("SELECT * FROM rl")
     data = cur.fetchall()
