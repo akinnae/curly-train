@@ -14,7 +14,7 @@ cur = conn.cursor()
 @app.route('/')
 def notes():
     # LOAD PAGE: homepage
-    cur.execute("SELECT * FROM rl")
+    cur.execute("SELECT * FROM duppr_pair")
     data = cur.fetchall()
     return render_template('interface.html', data=data)
 
@@ -26,11 +26,11 @@ def notes():
 @app.route('/home-sc', methods=['POST'])
 def send_comment():
     repo = request.form['send_comment_button']                              # gets repo name from value of send_comment_button button
-    cur.execute("UPDATE rl SET comment_sent=1 WHERE repo=%s", (repo,))      # changes comment_sent value to 1 (flags for PRcommenter.py)
+    cur.execute("UPDATE duppr_pair SET comment_sent=1 WHERE repo=%s", (repo,))      # changes comment_sent value to 1 (flags for PRcommenter.py)
     conn.commit()                                                           # saves changes
     print(cur.rowcount, "rows updated.")                                    # terminal notification to inform how many rows (repos) have been altered
     # LOAD PAGE: homepage
-    cur.execute("SELECT * FROM rl")
+    cur.execute("SELECT * FROM duppr_pair")
     data = cur.fetchall()
     return render_template('interface.html', data=data)
 
@@ -42,11 +42,11 @@ def send_comment():
 @app.route('/home-no-sc', methods=['POST'])
 def no_send_comment():
     repo = request.form['no_send_comment_button']                           # gets repo name from value of no_send_comment_button button
-    cur.execute("UPDATE rl SET comment_sent=3 WHERE repo=%s", (repo,))      # changes comment_sent value to 3 (flags for moving to another list)
+    cur.execute("UPDATE duppr_pair SET comment_sent=3 WHERE repo=%s", (repo,))      # changes comment_sent value to 3 (flags for moving to another list)
     conn.commit()                                                           # saves changes
     print(cur.rowcount, "rows updated.")                                    # terminal notification to inform how many rows (repos) have been altered
     # LOAD PAGE: homepage
-    cur.execute("SELECT * FROM rl")
+    cur.execute("SELECT * FROM duppr_pair")
     data = cur.fetchall()
     return render_template('interface.html', data=data)
 

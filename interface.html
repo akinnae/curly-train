@@ -4,10 +4,20 @@
   <table id='tbl' border=1 width="100%">
     <!-- headings -->
     <tr>
-      <th name='repo' style="width:13%">repo</th>
+      <th name='repo'>repo</th>
       <th>pr1</th>
       <th>pr2</th>
       <th onclick="sortTable(3)">score</th>
+      <th>title</th>
+      <th>description</th>
+      <th>patch content</th>
+      <th>patch content overlap</th>
+      <th>changed file</th>
+      <th>changed file overlap</th>
+      <th>location</th>
+      <th>location overlap</th>
+      <th>issue number</th>
+      <th>commit message</th>
       <th>Send comment?</th>
       <th>Notes</th>
     </tr>
@@ -22,6 +32,28 @@
       <td><a href="https://github.com/{{row[0]}}/pull/{{row[2]}}">{{row[2]}}<a/></td>
       <!-- similarity score -->
       <td>{{row[3]}}</td>
+      <!-- FEATURE SCORE LIST -->
+      <!-- title -->
+      <td>{{row[4]}}</td>
+      <!-- description -->
+      <td>{{row[5]}}</td>
+      <!-- patch content -->
+      <td>{{row[6]}}</td>
+      <!-- patch content overlap -->
+      <td>{{row[7]}}</td>
+      <!-- changed file -->
+      <td>{{row[8]}}</td>
+      <!-- changed file overlap -->
+      <td>{{row[9]}}</td>
+      <!-- location -->
+      <td>{{row[10]}}</td>
+      <!-- location overlap -->
+      <td>{{row[11]}}</td>
+      <!-- issue number -->
+      <td>{{row[12]}}</td>
+      <!-- commit message -->
+      <td>{{row[13]}}</td>
+      <!-- END FEATURE SCORE LIST -->
       <!-- send/don't send comment buttons -->
       <td>
         <form method=POST action="{{ url_for('send_comment') }}">
