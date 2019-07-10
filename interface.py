@@ -5,7 +5,7 @@ import PRcommenter
 app = Flask(__name__)
 
 # Connect to MySQL database
-conn = mysql.connector.connect(user ='root', password='***.', host='localhost', database='repolist', port='3306')
+conn = mysql.connector.connect(user='root', password='***.', host='localhost', database='repolist', port='3306')
 cur = conn.cursor()
 
 
@@ -18,8 +18,7 @@ def notes():
 
 
 # Runs upon clicking 'send comment.' Edits comment_sent col in db.
-# todo: change structure of db for comment_sent flags
-#       connect to PRcommenter.py
+# todo: when clicked, change available buttons shown
 
 @app.route('/home-sc', methods=['POST'])
 def send_comment():
@@ -35,8 +34,7 @@ def send_comment():
 
 
 # Runs upon clicking 'don't send comment.' Edits comment_sent col in db.
-# todo: determine why this func isn't working even though send_comment is
-#       add a separate page for repos with this flag
+# todo: add a separate page for repos with this flag
 
 @app.route('/home-no-sc', methods=['POST'])
 def no_send_comment():
