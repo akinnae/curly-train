@@ -14,10 +14,7 @@ cur = conn.cursor()
 
 @app.route('/')
 def notes():
-    # LOAD PAGE: homepage
-    cur.execute("SELECT * FROM duppr_pair")
-    data = cur.fetchall()
-    return render_template('interface.html', data=data)
+    return reload_home()
 
 
 # Runs upon clicking 'send comment.' Edits comment_sent col in db.
@@ -34,10 +31,7 @@ def send_comment():
     cur.execute("UPDATE duppr_pair SET comment_sent=1 WHERE repo=%s", (repo,))  # changes comment_sent value to 1 -- flags as sent
     conn.commit()                                                               # saves changes
     print(cur.rowcount, "rows updated.")                                        # terminal notification to inform how many rows (repos) have been altered
-    # LOAD PAGE: homepage
-    cur.execute("SELECT * FROM duppr_pair")
-    data = cur.fetchall()
-    return render_template('interface.html', data=data)
+    return reload_home()
 
 
 # Runs upon clicking 'don't send comment.' Edits comment_sent col in db.
@@ -46,13 +40,20 @@ def send_comment():
 
 @app.route('/home-no-sc', methods=['POST'])
 def no_send_comment():
-    repo = request.form['no_send_comment_button']                           # gets repo name from value of no_send_comment_button button
-    cur.execute("UPDATE duppr_pair SET comment_sent=3 WHERE repo=%s", (repo,))      # changes comment_sent value to 3 (flags for moving to another list)
-    conn.commit()                                                           # saves changes
-    print(cur.rowcount, "rows updated.")                                    # terminal notification to inform how many rows (repos) have been altered
-    # LOAD PAGE: homepage
+    repo = request.form['no_send_comment_button']                                # gets repo name from value of no_send_comment_button button
+    cur.execute("UPDATE duppr_pair SET comment_sent=-1 WHERE repo=%s", (repo,))  # changes comment_sent value to 3 (flags for moving to another list)
+    conn.commit()                                                                # saves changes
+    print(cur.rowcount, "rows updated.")                                         # terminal notification to inform how many rows (repos) have been altered
+    return reload_home()
+
+
+def reload_home():
     cur.execute("SELECT * FROM duppr_pair")
-    data = cur.fetchall()
+    data_init = cur.fetchall()
+    data = []
+    for row in data_init:               # don't display repos for which we've clicked "don't send comment"
+        if row[14] != -1:
+            data.append(row)
     return render_template('interface.html', data=data)
 
 
