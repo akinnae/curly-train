@@ -7,25 +7,33 @@
     {% else %}
     <a href="/">Home</a>
     {% endif %}
-  <table id='tbl' border=1 width="100%">
+  <table id='tbl' border=1 width="125%">
     <!-- headings -->
     <tr>
-      <th name='repo'>repo</th>
-      <th>pr1</th>
-      <th>pr2</th>
-      <th onclick="sortTable(3)">score</th>
-      <th>title</th>
-      <th>description</th>
-      <th>patch content</th>
-      <th>patch content overlap</th>
-      <th>changed file</th>
-      <th>changed file overlap</th>
-      <th>location</th>
-      <th>location overlap</th>
-      <th>issue number</th>
-      <th>commit message</th>
-      <th>Send comment?</th>
-      <th>Notes</th>
+      <th width="10%">repo</th>
+      <th width="5%">pr1</th>
+      <th width="5%">pr2</th>
+      <th width="10%">
+        {% if id == "home" %}
+        <form method=POST action="{{url_for('sort')}}">
+          <button value="score" name="sort_button">Score</button>
+        </form>
+        {% else %}
+        Score
+        {% endif %}
+      </th>
+      <th width="15%">Send comment?</th>
+      <th width="20%">Notes</th>
+      <th width="5%">title</th>
+      <th width="5%">description</th>
+      <th width="5%">patch content</th>
+      <th width="5%">patch content overlap</th>
+      <th width="5%">changed file</th>
+      <th width="5%">changed file overlap</th>
+      <th width="5%">location</th>
+      <th width="5%">location overlap</th>
+      <th width="5%">issue number</th>
+      <th width="5%">commit message</th>
     </tr>
     <!-- loop through rows (repos), showing db as a table on page -->
     {% for row in data %}
@@ -38,28 +46,6 @@
       <td><a href="https://github.com/{{row[0]}}/pull/{{row[2]}}">{{row[2]}}<a/></td>
       <!-- similarity score -->
       <td>{{row[3]}}</td>
-      <!-- FEATURE SCORE LIST -->
-      <!-- title -->
-      <td>{{row[4]}}</td>
-      <!-- description -->
-      <td>{{row[5]}}</td>
-      <!-- patch content -->
-      <td>{{row[6]}}</td>
-      <!-- patch content overlap -->
-      <td>{{row[7]}}</td>
-      <!-- changed file -->
-      <td>{{row[8]}}</td>
-      <!-- changed file overlap -->
-      <td>{{row[9]}}</td>
-      <!-- location -->
-      <td>{{row[10]}}</td>
-      <!-- location overlap -->
-      <td>{{row[11]}}</td>
-      <!-- issue number -->
-      <td>{{row[12]}}</td>
-      <!-- commit message -->
-      <td>{{row[13]}}</td>
-      <!-- END FEATURE SCORE LIST -->
       <!-- send/don't send comment buttons -->
       <td>
         {% if row[14] == 0 %}
@@ -83,14 +69,35 @@
         <form method=POST action="{{ url_for('notes') }}">
           <!-- if there are not yet any notes, display filler -->
           <!-- else (if there are already notes), display them -->
-          <textarea rows="4" name="notebox">{% if row[15] == None %}Input notes here...
+          <textarea rows="4" width="100%" name="notebox">{% if row[15] == None %}Input notes here...
           {% else %}{{row[15]}}
           {% endif %}
           </textarea>
-          <br>
           <button value="{{row[0]}}" name="save_button">Save</button>
         </form>
       </td>
+      <!-- FEATURE SCORE LIST -->
+      <!-- title -->
+      <td>{{row[4]}}</td>
+      <!-- description -->
+      <td>{{row[5]}}</td>
+      <!-- patch content -->
+      <td>{{row[6]}}</td>
+      <!-- patch content overlap -->
+      <td>{{row[7]}}</td>
+      <!-- changed file -->
+      <td>{{row[8]}}</td>
+      <!-- changed file overlap -->
+      <td>{{row[9]}}</td>
+      <!-- location -->
+      <td>{{row[10]}}</td>
+      <!-- location overlap -->
+      <td>{{row[11]}}</td>
+      <!-- issue number -->
+      <td>{{row[12]}}</td>
+      <!-- commit message -->
+      <td>{{row[13]}}</td>
+      <!-- END FEATURE SCORE LIST -->
     </tr>
     {% endfor %}
   </table>
