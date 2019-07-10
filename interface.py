@@ -1,6 +1,7 @@
 from flask import Flask, redirect, request, render_template
 from flaskext.mysql import MySQL
 import mysql.connector
+import PRcommenter
 app = Flask(__name__)
 
 # Connect to MySQL database
@@ -25,10 +26,14 @@ def notes():
 
 @app.route('/home-sc', methods=['POST'])
 def send_comment():
-    repo = request.form['send_comment_button']                              # gets repo name from value of send_comment_button button
-    cur.execute("UPDATE duppr_pair SET comment_sent=1 WHERE repo=%s", (repo,))      # changes comment_sent value to 1 (flags for PRcommenter.py)
-    conn.commit()                                                           # saves changes
-    print(cur.rowcount, "rows updated.")                                    # terminal notification to inform how many rows (repos) have been altered
+    repo = request.form['send_comment_button']                                  # gets repo name from value of send_comment_button button
+    cur.execute("SELECT * FROM duppr_pair WHERE repo=%s", (repo,))        # gets pr number
+    row = cur.fetchall()
+    pr = row[2]
+    PRcommenter.make_github_comment(repo, pr, "")                               # sends comment
+    cur.execute("UPDATE duppr_pair SET comment_sent=1 WHERE repo=%s", (repo,))  # changes comment_sent value to 1 -- flags as sent
+    conn.commit()                                                               # saves changes
+    print(cur.rowcount, "rows updated.")                                        # terminal notification to inform how many rows (repos) have been altered
     # LOAD PAGE: homepage
     cur.execute("SELECT * FROM duppr_pair")
     data = cur.fetchall()
