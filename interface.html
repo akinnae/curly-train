@@ -1,6 +1,11 @@
 
 <html>
 <body>
+    {% if id == "home" %}
+    <a href="/rejects">Rejected</a>
+    {% else %}
+    <a href="/">Home</a>
+    {% endif %}
   <table id='tbl' border=1 width="100%">
     <!-- headings -->
     <tr>

@@ -9,11 +9,6 @@ conn = mysql.connector.connect(user='root', password='***.', host='localhost', d
 cur = conn.cursor()
 
 
-@app.route('/')
-def home():
-    return reload_home()
-
-
 # Runs when the notes 'save' button is clicked; edits notes column in database.
 
 @app.route('/notes', methods=['POST'])
@@ -22,7 +17,7 @@ def notes():
     repo = request.form['save_button']                                              # get repo name
     cur.execute("UPDATE duppr_pair SET notes=%s WHERE repo=%s", (note, repo,))      # save notes to db
     conn.commit()                                                                   # save changes
-    return reload_home()
+    return load_home()
 
 
 # Runs upon clicking 'send comment.' Edits comment_sent col in db.
@@ -38,7 +33,7 @@ def send_comment():
     cur.execute("UPDATE duppr_pair SET comment_sent=1 WHERE repo=%s", (repo,))  # changes comment_sent value to 1 -- flags as sent
     conn.commit()                                                               # saves changes
     print(cur.rowcount, "rows updated.")                                        # terminal notification to inform how many rows (repos) have been altered
-    return reload_home()
+    return load_home()
 
 
 # Runs upon clicking 'don't send comment.' Edits comment_sent col in db.
@@ -50,17 +45,29 @@ def no_send_comment():
     cur.execute("UPDATE duppr_pair SET comment_sent=-1 WHERE repo=%s", (repo,))  # changes comment_sent value to 3 (flags for moving to another list)
     conn.commit()                                                                # saves changes
     print(cur.rowcount, "rows updated.")                                         # terminal notification to inform how many rows (repos) have been altered
-    return reload_home()
+    return load_home()
 
 
-def reload_home():
+@app.route('/')
+def load_home():
     cur.execute("SELECT * FROM duppr_pair")
     data_init = cur.fetchall()
     data = []
     for row in data_init:               # don't display repos for which we've clicked "don't send comment"
         if row[14] != -1:
             data.append(row)
-    return render_template('interface.html', data=data)
+    return render_template('interface.html', data=data, id="home")
+
+
+@app.route('/rejects')
+def load_reject_page():
+    cur.execute("SELECT * FROM duppr_pair")
+    data_init = cur.fetchall()
+    data = []
+    for row in data_init:               # only display repos for which we've clicked "don't send comment"
+        if row[14] == -1:
+            data.append(row)
+    return render_template('interface.html', data=data, id="rejects")
 
 
 if __name__ == '__main__':
