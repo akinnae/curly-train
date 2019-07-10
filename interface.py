@@ -21,7 +21,6 @@ def notes():
 
 
 # Runs upon clicking 'send comment.' Edits comment_sent col in db.
-# todo: when clicked, change available buttons shown
 
 @app.route('/home-sc', methods=['POST'])
 def send_comment():
@@ -37,15 +36,27 @@ def send_comment():
 
 
 # Runs upon clicking 'don't send comment.' Edits comment_sent col in db.
-# todo: add a separate page for repos with this flag
+# Adds repo (on home page) to rejects page/list.
 
 @app.route('/home-no-sc', methods=['POST'])
 def no_send_comment():
     repo = request.form['no_send_comment_button']                                # gets repo name from value of no_send_comment_button button
-    cur.execute("UPDATE duppr_pair SET comment_sent=-1 WHERE repo=%s", (repo,))  # changes comment_sent value to 3 (flags for moving to another list)
+    cur.execute("UPDATE duppr_pair SET comment_sent=-1 WHERE repo=%s", (repo,))  # changes comment_sent value to -1 (flags for moving to another list)
     conn.commit()                                                                # saves changes
     print(cur.rowcount, "rows updated.")                                         # terminal notification to inform how many rows (repos) have been altered
     return load_home()
+
+
+# Runs upon clicking 'reset.' Edits comment_sent col in db.
+# Adds repo (on rejects page) back to home page.
+
+@app.route('/rejects-reset-sc', methods=['POST'])
+def reset_send_comment():
+    repo = request.form['reset_button']                                          # gets repo name from value of no_send_comment_button button
+    cur.execute("UPDATE duppr_pair SET comment_sent=0 WHERE repo=%s", (repo,))   # changes comment_sent value to 0 (flags for returning to main list)
+    conn.commit()                                                                # saves changes
+    print(cur.rowcount, "rows updated.")                                         # terminal notification to inform how many rows (repos) have been altered
+    return load_reject_page()
 
 
 @app.route('/')

@@ -1,6 +1,7 @@
 
 <html>
 <body>
+    <!-- links to other page -->
     {% if id == "home" %}
     <a href="/rejects">Rejected</a>
     {% else %}
@@ -61,6 +62,7 @@
       <!-- END FEATURE SCORE LIST -->
       <!-- send/don't send comment buttons -->
       <td>
+        {% if row[14] == 0 %}
         <form method=POST action="{{ url_for('send_comment') }}">
           <button value="{{row[0]}}" name="send_comment_button">Send comment</button>
           <p>
@@ -68,6 +70,13 @@
         <form method=POST action="{{ url_for('no_send_comment') }}">
           <button value="{{row[0]}}" name="no_send_comment_button">Don't send comment</button>
         </form>
+        {% elif row[14] == 1 %}
+        Comment sent.
+        {% else %}
+        <form method=POST action="{{ url_for('reset_send_comment') }}">
+          <button value="{{row[0]}}" name="reset_button">Reset</button>
+        </form>
+        {% endif %}
       </td>
       <!-- note box, save button -->
       <td>
