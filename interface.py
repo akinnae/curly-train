@@ -9,11 +9,19 @@ conn = mysql.connector.connect(user='root', password='***.', host='localhost', d
 cur = conn.cursor()
 
 
-# Runs when the notes 'save' button is clicked; edits notes column in database.
-# todo: all. Currently just reloads page.
-
 @app.route('/')
+def home():
+    return reload_home()
+
+
+# Runs when the notes 'save' button is clicked; edits notes column in database.
+
+@app.route('/notes', methods=['POST'])
 def notes():
+    note = request.form['notebox']                                                  # get notes from textarea in html
+    repo = request.form['save_button']                                              # get repo name
+    cur.execute("UPDATE duppr_pair SET notes=%s WHERE repo=%s", (note, repo,))      # save notes to db
+    conn.commit()                                                                   # save changes
     return reload_home()
 
 
