@@ -2,35 +2,39 @@ import json
 import requests
 
 # Authentication info
-USERNAME = 'akinnae'
-TOKEN = '703ac8d71e771a38df424b15b7345d9571161d8f'
+
+with open('./input/authParams.txt') as f:
+    USERNAME, TOKEN = f.read().splitlines()
 
 # The repository to add this issue to
-REPO_OWNER = 'akinnae'
-REPO_NAME = 'curly-train'
-PR_NUMBER = 1
 
-def make_github_comment(body=None, commit_id=None, path=None, position=None):
+with open('./input/prParams.txt') as f:
+    REPO_NAME, REPO_OWNER, PR_NUMBER = f.read().splitlines()
+    PR_NUMBER = int(PR_NUMBER, 10)
+
+def make_github_comment(body=None):
     '''Create a comment on github.com using the given parameters.'''
     # Our url to create comments via POST
-    url = 'https://api.github.com/repos/%s/%s/pulls/%i/comments' % (REPO_OWNER, REPO_NAME, PR_NUMBER)
+    url = 'https://api.github.com/repos/%s/%s/issues/%i/comments' % (REPO_OWNER, REPO_NAME, PR_NUMBER)
     # Create an authenticated session to create the comment
     headers = {
         "Authorization": "token %s" % TOKEN,
-#        "Accept": "application/vnd.github.golden-comet-preview+json"
     }
-#    session = requests.session(auth=(USERNAME, TOKEN))
     # Create our comment
-    data = {'comment': {'body': body,
-             'commit_id': commit_id,
-             'path': path,
-             'position': position}}
-    # Add the comment to our repository
-    r = requests.request(json.dumps(data), url, headers=headers)
+    data = {'body': body}
+
+    r = requests.post(url, json.dumps(data), headers=headers)
     if r.status_code == 201:
         print('Successfully created comment "%s"' % body)
     else:
         print('Could not create comment "%s"' % body)
         print('Response:', r.content)
 
-make_github_comment('Why is this called ant license?', 'f57c0e77b8d1a3dfdc31e1d5641059d63a7d7f79', 'ant_license.txt', 0)
+make_github_comment("""__Hi there! This pull request looks like it might be a duplicate of #1, since it has _a similar title_ and _the same issue number.___
+
+Please help us out by clicking one of the options below: 
+- This pull request __is a duplicate__, so this comment was [__useful__](http://www.andrew.cmu.edu/user/aesau/dupbot-useful-v1.html).
+- This pull request is __not a duplicate__, but this comment was [__useful__](http://www.andrew.cmu.edu/user/aesau/dupbot-useful-v1.html) nevertheless.
+- This pull request is __not a duplicate__, so this comment was [__not useful__](http://www.andrew.cmu.edu/user/aesau/dupbot-unuseful-v1.html).
+- I do not need this service, so this comment was [__not useful__](http://www.andrew.cmu.edu/user/aesau/dupbot-unuseful-v1.html).
+                    """)
