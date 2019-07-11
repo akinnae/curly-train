@@ -96,6 +96,53 @@
       <!-- END FEATURE SCORE LIST -->
     </tr>
     {% endfor %}
+    {% for row in data_dups %}
+    <tr>
+      <!-- repo name, links to repo page -->
+      <td><a href="https://github.com/{{row[0]}}">{{row[0]}}</a></td>
+      <!-- PR #1, links to PR1 page -->
+      <td><a href="https://github.com/{{row[0]}}/pull/{{row[1]}}">{{row[1]}}<a/></td>
+      <!-- PR #2, links to PR2 page -->
+      <td><a href="https://github.com/{{row[0]}}/pull/{{row[2]}}">{{row[2]}}<a/></td>
+      <!-- similarity score -->
+      <td>{{row[3]}}</td>
+      <td>There is already a repo with this name. Click 'don't send comment' on that one to access this one.</td>
+      <!-- note box, save button -->
+      <td>
+        <form method=POST action="{{ url_for('notes') }}">
+          <!-- if there are not yet any notes, display filler -->
+          <!-- else (if there are already notes), display them -->
+          <textarea rows="4" width="100%" name="notebox">{% if row[15] == None %}Input notes here...
+          {% else %}{{row[15]}}
+          {% endif %}
+          </textarea>
+          <button value="{{row[0]}}" name="save_button">Save</button>
+        </form>
+      </td>
+      <!-- FEATURE SCORE LIST -->
+      <!-- title -->
+      <td>{{row[4]}}</td>
+      <!-- description -->
+      <td>{{row[5]}}</td>
+      <!-- patch content -->
+      <td>{{row[6]}}</td>
+      <!-- patch content overlap -->
+      <td>{{row[7]}}</td>
+      <!-- changed file -->
+      <td>{{row[8]}}</td>
+      <!-- changed file overlap -->
+      <td>{{row[9]}}</td>
+      <!-- location -->
+      <td>{{row[10]}}</td>
+      <!-- location overlap -->
+      <td>{{row[11]}}</td>
+      <!-- issue number -->
+      <td>{{row[12]}}</td>
+      <!-- commit message -->
+      <td>{{row[13]}}</td>
+      <!-- END FEATURE SCORE LIST -->
+    </tr>
+    {% endfor %}
   </table>
 
   <script>

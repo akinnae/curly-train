@@ -65,10 +65,24 @@ def load_home():
     cur.execute("SELECT * FROM duppr_pair")
     data_init = cur.fetchall()
     data = []
-    for row in data_init:               # don't display repos for which we've clicked "don't send comment"
-        if row[14] != -1:
-            data.append(row)
-    return render_template('interface.html', data=data, id="home")
+    data_dups = []
+    for row in data_init:
+        if row[14] != -1:               # don't display repos for which we've clicked "don't send comment"
+            dup = 0
+            for row_check in data:
+                if row_check[0] == row[0]:
+                    dup = 1
+                    if row_check[3] < row[3]:
+                        data_dups.append(row_check)
+                        data.remove(row_check)
+                        data.append(row)
+                        break
+                    else:
+                        data_dups.append(row)
+                        break
+            if dup == 0:
+                data.append(row)
+    return render_template('interface.html', data=data, id="home", data_dups=data_dups)
 
 
 @app.route('/rejects')
@@ -79,7 +93,7 @@ def load_reject_page():
     for row in data_init:               # only display repos for which we've clicked "don't send comment"
         if row[14] == -1:
             data.append(row)
-    return render_template('interface.html', data=data, id="rejects")
+    return render_template('interface.html', data=data, id="rejects", data_dups=data_dups)
 
 
 if __name__ == '__main__':
