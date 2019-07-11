@@ -4,12 +4,13 @@
     <!-- links to other page -->
     {% if id == "home" %}
     <a href="/rejects">Rejected</a>
-    <p>
-    <button onclick="sortTable('score')">Sort by score</button>
-    <button onclick="sortTable('repo')">Sort by repo</button>
     {% else %}
     <a href="/">Home</a>
     {% endif %}
+    <p>
+    <button onclick="sortTable('score')">Sort by score</button>
+    <button onclick="sortTable('timestamp')">Sort by timestamp</button>
+    <button onclick="sortTable('repo')">Sort by repo</button>
   <table id='tbl' border=1 width="125%">
     <!-- headings -->
     <tr>
@@ -99,10 +100,12 @@
 
   <script>
     function sortTable(sort_by) {
-      var table, rows, switching, i, x, y, n, shouldSwitch;
+      var table, rows, switching, i, x, y, n, shouldSwitch, dir, switchcount = 0;
       if(sort_by == "score"){n = 3;}                //sort by sim. score
-        else if (sort_by == "timestamp") {n = 1;}   //sort by timestamp
+        else if (sort_by == "timestamp") {n = 2;}   //sort by timestamp
         else{ n = 0; }                              //sort by repo
+      if(n == 0){dir = "asc";}
+        else{dir = "desc";}
       table = document.getElementById("tbl");
       switching = true;
       /*Make a loop that will continue until
@@ -122,7 +125,7 @@
           y = rows[i + 1].getElementsByTagName("TD")[n];
           /*check if the two rows should switch place,
           based on the direction, asc or desc:*/
-          if (n == 0) {
+          if (dir == "asc") {
             if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
               //if so, mark as a switch and break the loop:
               shouldSwitch= true;
@@ -143,13 +146,6 @@
           switching = true;
           //Each time a switch is done, increase this count by 1:
           switchcount ++;
-        } else {
-          /*If no switching has been done AND the direction is "asc",
-          set the direction to "desc" and run the while loop again.*/
-          if (switchcount == 0 && n == 0) {
-            dir = "desc";
-            switching = true;
-          }
         }
       }
     }
