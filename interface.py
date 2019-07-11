@@ -1,5 +1,6 @@
 from flask import Flask, redirect, request, render_template
 from flaskext.mysql import MySQL
+# from sqlalchemy import desc
 import mysql.connector
 import PRcommenter
 app = Flask(__name__)
@@ -57,21 +58,6 @@ def reset_send_comment():
     conn.commit()                                                                # saves changes
     print(cur.rowcount, "rows updated.")                                         # terminal notification to inform how many rows (repos) have been altered
     return load_reject_page()
-
-
-# Sorts home table by score or by date.
-# todo: make it work. No errors being thrown, but it doesn't seem to sort anything
-
-@app.route('/sort', methods=['POST'])
-def sort():
-    sort_by = request.form['sort_button']
-    cur.execute("SELECT * FROM duppr_pair ORDER BY %s", (sort_by,))
-    data_init = cur.fetchall()
-    data = []
-    for row in data_init:
-        if row[14] != -1:
-            data.append(row)
-    return render_template('interface.html', data=data, id="home")
 
 
 @app.route('/')
