@@ -1,6 +1,5 @@
 from flask import Flask, redirect, request, render_template
 from flaskext.mysql import MySQL
-# from sqlalchemy import desc
 import mysql.connector
 import PRcommenter
 app = Flask(__name__)
@@ -8,6 +7,19 @@ app = Flask(__name__)
 # Connect to MySQL database
 conn = mysql.connector.connect(user='root', password='***.', host='localhost', database='repolist', port='3306')
 cur = conn.cursor()
+
+
+# Updates database by parsing files
+
+@app.route('/update-db', methods=['POST'])
+def update_db():
+    cur.execute('INSERT INTO duppr_pair(repo, pr1, pr2, score, title, description, patch_content, patch_content_overlap, \
+        changed_file, changed_file_overlap, location, location_overlap, issue_number, commit_message) \
+        VALUES ("%s", "%i", "%i", "%d", "%d", "%d", "%d", "%d", "%d", "%d", "%d", "%d", "%d", "%d")',
+                (repo, pr1, pr2, score, title, description, patch_content, patch_content_overlap,
+                    changed_file, changed_file_overlap, location, location_overlap, issue_number, commit_message,))
+    conn.commit()
+    return load_home()
 
 
 # Runs when the notes 'save' button is clicked; edits notes column in database.

@@ -8,6 +8,10 @@
     <a href="/">Home</a>
     {% endif %}
     <p>
+      <form method=POST action="{{ url_for('update_db') }}">
+        <button>Update</button>
+      </form>
+    <p><p>
     <button onclick="sortTable('score')">Sort by score</button>
     <button onclick="sortTable('timestamp')">Sort by timestamp</button>
     <button onclick="sortTable('repo')">Sort by repo</button>
