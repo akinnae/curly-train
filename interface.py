@@ -41,10 +41,10 @@ def send_comment():
 
 @app.route('/home-no-sc', methods=['POST'])
 def no_send_comment():
-    repo = request.form['no_send_comment_button']                                # gets repo name from value of no_send_comment_button button
-    cur.execute("UPDATE duppr_pair SET comment_sent=-1 WHERE repo=%s", (repo,))  # changes comment_sent value to -1 (flags for moving to another list)
-    conn.commit()                                                                # saves changes
-    print(cur.rowcount, "rows updated.")                                         # terminal notification to inform how many rows (repos) have been altered
+    repo_id = request.form['no_send_comment_button']                                # gets repo name from value of no_send_comment_button button
+    cur.execute("UPDATE duppr_pair SET comment_sent=-1 WHERE id=%s", (repo_id,))    # changes comment_sent value to -1 (flags for moving to another list)
+    conn.commit()                                                                   # saves changes
+    print(cur.rowcount, "rows updated.")                                            # terminal notification to inform how many rows (repos) have been altered
     return load_home()
 
 
@@ -53,10 +53,10 @@ def no_send_comment():
 
 @app.route('/rejects-reset-sc', methods=['POST'])
 def reset_send_comment():
-    repo = request.form['reset_button']                                          # gets repo name from value of no_send_comment_button button
-    cur.execute("UPDATE duppr_pair SET comment_sent=0 WHERE repo=%s", (repo,))   # changes comment_sent value to 0 (flags for returning to main list)
-    conn.commit()                                                                # saves changes
-    print(cur.rowcount, "rows updated.")                                         # terminal notification to inform how many rows (repos) have been altered
+    repo_id = request.form['reset_button']                                          # gets repo name from value of no_send_comment_button button
+    cur.execute("UPDATE duppr_pair SET comment_sent=0 WHERE id=%s", (repo_id,))     # changes comment_sent value to 0 (flags for returning to main list)
+    conn.commit()                                                                   # saves changes
+    print(cur.rowcount, "rows updated.")                                            # terminal notification to inform how many rows (repos) have been altered
     return load_reject_page()
 
 
@@ -67,12 +67,12 @@ def load_home():
     data = []
     data_dups = []
     for row in data_init:
-        if row[14] != -1:               # don't display repos for which we've clicked "don't send comment"
+        if row[15] != -1:               # don't display repos for which we've clicked "don't send comment"
             dup = 0
             for row_check in data:
-                if row_check[0] == row[0]:
+                if (row_check[1] == row[1]) & (row_check[15] != -1):
                     dup = 1
-                    if row_check[3] < row[3]:
+                    if row_check[4] < row[4]:
                         data_dups.append(row_check)
                         data.remove(row_check)
                         data.append(row)
@@ -91,9 +91,9 @@ def load_reject_page():
     data_init = cur.fetchall()
     data = []
     for row in data_init:               # only display repos for which we've clicked "don't send comment"
-        if row[14] == -1:
+        if row[15] == -1:
             data.append(row)
-    return render_template('interface.html', data=data, id="rejects", data_dups=data_dups)
+    return render_template('interface.html', data=data, id="rejects", data_dups=[])
 
 
 if __name__ == '__main__':

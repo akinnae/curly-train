@@ -35,16 +35,16 @@
     {% for row in data %}
     <tr>
       <!-- repo name, links to repo page -->
-      <td><a href="https://github.com/{{row[0]}}">{{row[0]}}</a></td>
+      <td><a href="https://github.com/{{row[1]}}">{{row[1]}}</a></td>
       <!-- PR #1, links to PR1 page -->
-      <td><a href="https://github.com/{{row[0]}}/pull/{{row[1]}}">{{row[1]}}<a/></td>
+      <td><a href="https://github.com/{{row[1]}}/pull/{{row[2]}}">{{row[2]}}<a/></td>
       <!-- PR #2, links to PR2 page -->
-      <td><a href="https://github.com/{{row[0]}}/pull/{{row[2]}}">{{row[2]}}<a/></td>
+      <td><a href="https://github.com/{{row[1]}}/pull/{{row[3]}}">{{row[3]}}<a/></td>
       <!-- similarity score -->
-      <td>{{row[3]}}</td>
+      <td>{{row[4]}}</td>
       <!-- send/don't send comment buttons -->
       <td>
-        {% if row[14] == 0 %}
+        {% if row[15] == 0 %}
         <form method=POST action="{{ url_for('send_comment') }}">
           <button value="{{row[0]}}" name="send_comment_button">Send comment</button>
           <p>
@@ -52,7 +52,7 @@
         <form method=POST action="{{ url_for('no_send_comment') }}">
           <button value="{{row[0]}}" name="no_send_comment_button">Don't send comment</button>
         </form>
-        {% elif row[14] == 1 %}
+        {% elif row[15] == 1 %}
         Comment sent.
         {% else %}
         <form method=POST action="{{ url_for('reset_send_comment') }}">
@@ -65,81 +65,81 @@
         <form method=POST action="{{ url_for('notes') }}">
           <!-- if there are not yet any notes, display filler -->
           <!-- else (if there are already notes), display them -->
-          <textarea rows="4" width="100%" name="notebox">{% if row[15] == None %}Input notes here...
-          {% else %}{{row[15]}}
+          <textarea rows="4" width="100%" name="notebox">{% if row[16] == None %}Input notes here...
+          {% else %}{{row[16]}}
           {% endif %}
           </textarea>
-          <button value="{{row[0]}}" name="save_button">Save</button>
+          <button value="{{row[1]}}" name="save_button">Save</button>
         </form>
       </td>
       <!-- FEATURE SCORE LIST -->
       <!-- title -->
-      <td>{{row[4]}}</td>
-      <!-- description -->
       <td>{{row[5]}}</td>
-      <!-- patch content -->
+      <!-- description -->
       <td>{{row[6]}}</td>
-      <!-- patch content overlap -->
+      <!-- patch content -->
       <td>{{row[7]}}</td>
-      <!-- changed file -->
+      <!-- patch content overlap -->
       <td>{{row[8]}}</td>
-      <!-- changed file overlap -->
+      <!-- changed file -->
       <td>{{row[9]}}</td>
-      <!-- location -->
+      <!-- changed file overlap -->
       <td>{{row[10]}}</td>
-      <!-- location overlap -->
+      <!-- location -->
       <td>{{row[11]}}</td>
-      <!-- issue number -->
+      <!-- location overlap -->
       <td>{{row[12]}}</td>
-      <!-- commit message -->
+      <!-- issue number -->
       <td>{{row[13]}}</td>
+      <!-- commit message -->
+      <td>{{row[14]}}</td>
       <!-- END FEATURE SCORE LIST -->
     </tr>
     {% endfor %}
     {% for row in data_dups %}
     <tr>
       <!-- repo name, links to repo page -->
-      <td><a href="https://github.com/{{row[0]}}">{{row[0]}}</a></td>
+      <td><a href="https://github.com/{{row[1]}}">{{row[1]}}</a></td>
       <!-- PR #1, links to PR1 page -->
-      <td><a href="https://github.com/{{row[0]}}/pull/{{row[1]}}">{{row[1]}}<a/></td>
+      <td><a href="https://github.com/{{row[1]}}/pull/{{row[2]}}">{{row[2]}}<a/></td>
       <!-- PR #2, links to PR2 page -->
-      <td><a href="https://github.com/{{row[0]}}/pull/{{row[2]}}">{{row[2]}}<a/></td>
+      <td><a href="https://github.com/{{row[1]}}/pull/{{row[3]}}">{{row[3]}}<a/></td>
       <!-- similarity score -->
-      <td>{{row[3]}}</td>
+      <td>{{row[4]}}</td>
       <td>There is already a repo with this name. Click 'don't send comment' on that one to access this one.</td>
       <!-- note box, save button -->
       <td>
         <form method=POST action="{{ url_for('notes') }}">
           <!-- if there are not yet any notes, display filler -->
           <!-- else (if there are already notes), display them -->
-          <textarea rows="4" width="100%" name="notebox">{% if row[15] == None %}Input notes here...
-          {% else %}{{row[15]}}
+          <textarea rows="4" width="100%" name="notebox">{% if row[16] == None %}Input notes here...
+          {% else %}{{row[16]}}
           {% endif %}
           </textarea>
-          <button value="{{row[0]}}" name="save_button">Save</button>
+          <button value="{{row[1]}}" name="save_button">Save</button>
         </form>
       </td>
       <!-- FEATURE SCORE LIST -->
       <!-- title -->
-      <td>{{row[4]}}</td>
-      <!-- description -->
       <td>{{row[5]}}</td>
-      <!-- patch content -->
+      <!-- description -->
       <td>{{row[6]}}</td>
-      <!-- patch content overlap -->
+      <!-- patch content -->
       <td>{{row[7]}}</td>
-      <!-- changed file -->
+      <!-- patch content overlap -->
       <td>{{row[8]}}</td>
-      <!-- changed file overlap -->
+      <!-- changed file -->
       <td>{{row[9]}}</td>
-      <!-- location -->
+      <!-- changed file overlap -->
       <td>{{row[10]}}</td>
-      <!-- location overlap -->
+      <!-- location -->
       <td>{{row[11]}}</td>
-      <!-- issue number -->
+      <!-- location overlap -->
       <td>{{row[12]}}</td>
-      <!-- commit message -->
+      <!-- issue number -->
       <td>{{row[13]}}</td>
+      <!-- commit message -->
+      <td>{{row[14]}}</td>
       <!-- END FEATURE SCORE LIST -->
     </tr>
     {% endfor %}
