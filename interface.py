@@ -21,15 +21,14 @@ def update_db():
         path += filename
         with open(path) as tsv:
             for line in csv.reader(tsv, delimiter="\t"):    # for every line (PR pair) in the current file
-                for x in line:
-                    x.strip('')
-                cur.execute('SELECT * FROM duppr_pair')
-                check = cur.fetchall()
+                # check whether this pr pair has already been added to the db:
                 flag = 0
+                cur.execute("SELECT * FROM duppr_pair")
+                check = cur.fetchall()
                 for check_line in check:
-                    # if (check_line[1] == pr_pair_tuple[0]) & (check_line[2] == pr_pair_tuple[1]) & (check_line[3] == pr_pair_tuple[2]):
-                    if (check_line[2] == line[1]) & (check_line[3] == line[2]):
+                    if (check_line[1] == line[0]) & (check_line[2] == line[1]) & (check_line[3] == line[2]):
                         flag = 1
+                # if it has not, add it to the db:
                 if flag == 0:
                     pr_pair_tuple = (line[0], int(line[1], 10), int(line[2], 10), float(line[3]), float(line[4]),
                                      float(line[5]), float(line[6]), float(line[7]), float(line[8]),
@@ -37,7 +36,8 @@ def update_db():
                     cur.execute('INSERT INTO duppr_pair(repo, pr1, pr2, score, title, description, patch_content, patch_content_overlap, \
                         changed_file, changed_file_overlap, location, location_overlap, issue_number, commit_message) \
                         VALUES ("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s")', pr_pair_tuple)
-    # conn.commit()
+    # save changes and reload page:
+    conn.commit()
     return load_home()
 
 
@@ -46,8 +46,8 @@ def update_db():
 @app.route('/notes', methods=['POST'])
 def notes():
     note = request.form['notebox']                                                  # get notes from textarea in html
-    repo = request.form['save_button']                                              # get repo name
-    cur.execute("UPDATE duppr_pair SET notes=%s WHERE repo=%s", (note, repo,))      # save notes to db
+    repo_id = request.form['save_button']                                              # get repo name
+    cur.execute("UPDATE duppr_pair SET notes=%s WHERE id=%s", (note, repo_id,))      # save notes to db
     conn.commit()                                                                   # save changes
     return load_home()
 
@@ -98,6 +98,7 @@ def load_home():
     data = []
     data_dups = []
     for row in data_init:
+        cur.execute("UPDATE duppr_pair SET repo=%s WHERE id=%s", (row[1].replace("'", ""), row[0],))
         if row[15] != -1:               # don't display repos for which we've clicked "don't send comment"
             dup = 0
             for row_check in data:
