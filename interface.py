@@ -21,25 +21,22 @@ def update_db():
         path += filename
         with open(path) as tsv:
             for line in csv.reader(tsv, delimiter="\t"):    # for every line (PR pair) in the current file
-                repo = line[0]
-                pr1 = line[1]
-                pr2 = line[2]
-                score = float(line[3].strip(''))
-                title = float(line[4].strip(''))
-                description = float(line[5].strip(''))
-                patch_content = float(line[6].strip(''))
-                patch_content_overlap = float(line[7].strip(''))
-                changed_file = float(line[8].strip(''))
-                changed_file_overlap = float(line[9].strip(''))
-                location = float(line[10].strip(''))
-                location_overlap = float(line[11].strip(''))
-                issue_number = float(line[12].strip(''))
-                commit_message = float(line[13].strip(''))
-                cur.execute('INSERT INTO duppr_pair(repo, pr1, pr2, score, title, description, patch_content, patch_content_overlap, \
+                for x in line:
+                    x.strip('')
+                cur.execute('SELECT * FROM duppr_pair')
+                check = cur.fetchall()
+                flag = 0
+                for check_line in check:
+                    # if (check_line[1] == pr_pair_tuple[0]) & (check_line[2] == pr_pair_tuple[1]) & (check_line[3] == pr_pair_tuple[2]):
+                    if (check_line[2] == line[1]) & (check_line[3] == line[2]):
+                        flag = 1
+                if flag == 0:
+                    pr_pair_tuple = (line[0], int(line[1], 10), int(line[2], 10), float(line[3]), float(line[4]),
+                                     float(line[5]), float(line[6]), float(line[7]), float(line[8]),
+                                     float(line[9]), float(line[10]), float(line[11]), float(line[12]), float(line[13]))
+                    cur.execute('INSERT INTO duppr_pair(repo, pr1, pr2, score, title, description, patch_content, patch_content_overlap, \
                         changed_file, changed_file_overlap, location, location_overlap, issue_number, commit_message) \
-                        VALUES ("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s")',
-                            (repo, pr1, pr2, score, title, description, patch_content, patch_content_overlap,
-                                changed_file, changed_file_overlap, location, location_overlap, issue_number, commit_message,))
+                        VALUES ("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s")', pr_pair_tuple)
     # conn.commit()
     return load_home()
 
@@ -59,12 +56,12 @@ def notes():
 
 @app.route('/home-sc', methods=['POST'])
 def send_comment():
-    repo = request.form['send_comment_button']                                  # gets repo name from value of send_comment_button button
-    cur.execute("SELECT pr1 FROM duppr_pair WHERE repo=%s", (repo,))            # gets pr number
+    repo_id = request.form['send_comment_button']                                  # gets repo name from value of send_comment_button button
+    cur.execute("SELECT pr1 FROM duppr_pair WHERE id=%s", (repo_id,))           # gets pr number
     pr = cur.fetchall()
     pr = int(pr[0][0], 10)                                                      # type as int
     PRcommenter.make_github_comment(repo, pr, "")                               # sends comment
-    cur.execute("UPDATE duppr_pair SET comment_sent=1 WHERE repo=%s", (repo,))  # changes comment_sent value to 1 -- flags as sent
+    cur.execute("UPDATE duppr_pair SET comment_sent=1 WHERE id=%s", (repo_id,)) # changes comment_sent value to 1 -- flags as sent
     conn.commit()                                                               # saves changes
     print(cur.rowcount, "rows updated.")                                        # terminal notification to inform how many rows (repos) have been altered
     return load_home()
