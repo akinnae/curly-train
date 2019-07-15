@@ -1,6 +1,8 @@
 from flask import Flask, redirect, request, render_template
 from flaskext.mysql import MySQL
 import mysql.connector
+import csv
+import os
 import PRcommenter
 app = Flask(__name__)
 
@@ -13,12 +15,32 @@ cur = conn.cursor()
 
 @app.route('/update-db', methods=['POST'])
 def update_db():
-    cur.execute('INSERT INTO duppr_pair(repo, pr1, pr2, score, title, description, patch_content, patch_content_overlap, \
-        changed_file, changed_file_overlap, location, location_overlap, issue_number, commit_message) \
-        VALUES ("%s", "%i", "%i", "%d", "%d", "%d", "%d", "%d", "%d", "%d", "%d", "%d", "%d", "%d")',
-                (repo, pr1, pr2, score, title, description, patch_content, patch_content_overlap,
-                    changed_file, changed_file_overlap, location, location_overlap, issue_number, commit_message,))
-    conn.commit()
+    path = 'C:\\Users\\annik\\Documents\\REUSE\\interface\\dupPR'
+    for filename in os.listdir(path):                       # for every file (repository) in the dupPR directory
+        path += '\\'
+        path += filename
+        with open(path) as tsv:
+            for line in csv.reader(tsv, delimiter="\t"):    # for every line (PR pair) in the current file
+                repo = line[0]
+                pr1 = line[1]
+                pr2 = line[2]
+                score = float(line[3].strip(''))
+                title = float(line[4].strip(''))
+                description = float(line[5].strip(''))
+                patch_content = float(line[6].strip(''))
+                patch_content_overlap = float(line[7].strip(''))
+                changed_file = float(line[8].strip(''))
+                changed_file_overlap = float(line[9].strip(''))
+                location = float(line[10].strip(''))
+                location_overlap = float(line[11].strip(''))
+                issue_number = float(line[12].strip(''))
+                commit_message = float(line[13].strip(''))
+                cur.execute('INSERT INTO duppr_pair(repo, pr1, pr2, score, title, description, patch_content, patch_content_overlap, \
+                        changed_file, changed_file_overlap, location, location_overlap, issue_number, commit_message) \
+                        VALUES ("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s")',
+                            (repo, pr1, pr2, score, title, description, patch_content, patch_content_overlap,
+                                changed_file, changed_file_overlap, location, location_overlap, issue_number, commit_message,))
+    # conn.commit()
     return load_home()
 
 
