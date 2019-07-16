@@ -115,8 +115,9 @@ def top_pair(data):
         elif row[15] == -1:
             cur.execute("UPDATE duppr_pair SET toppair=0 WHERE id=%s", (row[0],))
         else:
+            cur.execute("UPDATE duppr_pair SET toppair=1 WHERE id=%s", (row[0],))
             for row_check in data_check:
-                if row[1] == row_check[1]:
+                if (row[0] != row_check[0]) & (row[1] == row_check[1]):
                     cur.execute("UPDATE duppr_pair SET toppair=2 WHERE id=%s", (row_check[0],))
     conn.commit()
     return data
@@ -160,7 +161,7 @@ def load_home():
         if row[15] != -1:               # don't display repos for which we've clicked "don't send comment"
             if row[21] == 1 or -1:
                 data.append(row)
-            elif (row[21] == 0) & (show_hide == "show"):
+            elif (row[21] == 0 or 2) & (show_hide == "show"):
                 data_dups.append(row)
     return render_template('interface.html', data=data, id="home", data_dups=data_dups)
 

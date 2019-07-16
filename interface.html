@@ -56,31 +56,77 @@
       <!-- send/don't send comment buttons -->
       <td>
         {% if id == "home" %}
-        {% if row[21] != 0 %}
-          {% if row[21] != 2 %}
-            {% if row[15] == 0 %}
-            <form method=POST action="{{ url_for('send_comment') }}">
-              <button value="{{row[0]}}" name="send_comment_button">Send comment</button>
-              <p>
-            </form>
-            <form method=POST action="{{ url_for('no_send_comment') }}">
-              <button value="{{row[0]}}" name="no_send_comment_button">Don't send comment</button>
-            </form>
-            {% elif row[15] == 1 %}
-            Comment sent.
-            {% endif %}
-          {% else %}
-          Comment already sent to this repo.
+          {% if row[15] == 0 %}
+          <form method=POST action="{{ url_for('send_comment') }}">
+            <button value="{{row[0]}}" name="send_comment_button">Send comment</button>
+            <p>
+          </form>
+          <form method=POST action="{{ url_for('no_send_comment') }}">
+            <button value="{{row[0]}}" name="no_send_comment_button">Don't send comment</button>
+          </form>
+          {% elif row[15] == 1 %}
+          Comment sent.
           {% endif %}
         {% else %}
+          <form method=POST action="{{ url_for('reset_send_comment') }}">
+            <button value="{{row[0]}}" name="reset_button">Reset</button>
+          </form>
+        {% endif %}
+      </td>
+      <!-- note box, save button -->
+      <td>
+        <form method=POST action="{{ url_for('notes') }}">
+          <!-- if there are not yet any notes, display filler -->
+          <!-- else (if there are already notes), display them -->
+          <textarea rows="4" width="100%" name="notebox">{% if row[16] == None %}Input notes here...
+          {% else %}{{row[16]}}
+          {% endif %}
+          </textarea>
+          <button value="{{row[1]}}" name="save_button">Save</button>
+        </form>
+      </td>
+      <!-- FEATURE SCORE LIST -->
+      <!-- title -->
+      <td>{{row[5]}}</td>
+      <!-- description -->
+      <td>{{row[6]}}</td>
+      <!-- patch content -->
+      <td>{{row[7]}}</td>
+      <!-- patch content overlap -->
+      <td>{{row[8]}}</td>
+      <!-- changed file -->
+      <td>{{row[9]}}</td>
+      <!-- changed file overlap -->
+      <td>{{row[10]}}</td>
+      <!-- location -->
+      <td>{{row[11]}}</td>
+      <!-- location overlap -->
+      <td>{{row[12]}}</td>
+      <!-- issue number -->
+      <td>{{row[13]}}</td>
+      <!-- commit message -->
+      <td>{{row[14]}}</td>
+      <!-- END FEATURE SCORE LIST -->
+    </tr>
+    {% endfor %}
+    {% for row in data_dups %}
+    <tr>
+      <!-- repo name, links to repo page -->
+      <td><a href="https://github.com/{{row[1]}}">{{row[1]}}</a></td>
+      <!-- PR #1, links to PR1 page -->
+      <td><a href="https://github.com/{{row[1]}}/pull/{{row[2]}}">{{row[2]}}<a/></td>
+      <!-- PR #2, links to PR2 page -->
+      <td><a href="https://github.com/{{row[1]}}/pull/{{row[3]}}">{{row[3]}}<a/></td>
+      <!-- similarity score -->
+      <td>{{row[4]}}</td>
+      <!-- send/don't send comment buttons -->
+      <td>
+        {% if row[21] == 2 %}
+        Comment already sent to this repo.
+        {% elif row[21] == 0 %}
         There is already a pair from this repo.
         <form method=POST action="{{ url_for('change_toppair')}}">
           <button value="{{row[0]}}" name="move">Choose this one instead</button>
-        </form>
-        {% endif %}
-        {% else %}
-        <form method=POST action="{{ url_for('reset_send_comment') }}">
-          <button value="{{row[0]}}" name="reset_button">Reset</button>
         </form>
         {% endif %}
       </td>
