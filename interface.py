@@ -6,9 +6,12 @@ import os
 import PRcommenter
 app = Flask(__name__)
 
+
 # Connect to MySQL database
 conn = mysql.connector.connect(user='root', password='***.', host='localhost', database='repolist', port='3306')
 cur = conn.cursor()
+# Create flag for showing all PR pairs vs one per repo
+show_hide = 'show'
 
 
 # Updates database by parsing files
@@ -41,13 +44,21 @@ def update_db():
     return load_home()
 
 
+# Switches between show and hide mode
+@app.route('/show-hide', methods=['POST'])
+def show_hide_switch():
+    global show_hide
+    show_hide = request.form['show_hide_button']
+    return load_home()
+
+
 # Runs when the notes 'save' button is clicked; edits notes column in database.
 
 @app.route('/notes', methods=['POST'])
 def notes():
     note = request.form['notebox']                                                  # get notes from textarea in html
-    repo_id = request.form['save_button']                                              # get repo name
-    cur.execute("UPDATE duppr_pair SET notes=%s WHERE id=%s", (note, repo_id,))      # save notes to db
+    repo_id = request.form['save_button']                                           # get repo name
+    cur.execute("UPDATE duppr_pair SET notes=%s WHERE id=%s", (note, repo_id,))     # save notes to db
     conn.commit()                                                                   # save changes
     return load_home()
 
@@ -56,14 +67,14 @@ def notes():
 
 @app.route('/home-sc', methods=['POST'])
 def send_comment():
-    repo_id = request.form['send_comment_button']                                  # gets repo name from value of send_comment_button button
-    cur.execute("SELECT pr1 FROM duppr_pair WHERE id=%s", (repo_id,))           # gets pr number
+    repo_id = request.form['send_comment_button']                                   # gets repo name from value of send_comment_button button
+    cur.execute("SELECT pr1 FROM duppr_pair WHERE id=%s", (repo_id,))               # gets pr number
     pr = cur.fetchall()
-    pr = int(pr[0][0], 10)                                                      # type as int
-    PRcommenter.make_github_comment(repo, pr, "")                               # sends comment
-    cur.execute("UPDATE duppr_pair SET comment_sent=1 WHERE id=%s", (repo_id,)) # changes comment_sent value to 1 -- flags as sent
-    conn.commit()                                                               # saves changes
-    print(cur.rowcount, "rows updated.")                                        # terminal notification to inform how many rows (repos) have been altered
+    pr = int(pr[0][0], 10)                                                          # type as int
+    PRcommenter.make_github_comment(repo, pr, "")                                   # sends comment
+    cur.execute("UPDATE duppr_pair SET comment_sent=1 WHERE id=%s", (repo_id,))     # changes comment_sent value to 1 -- flags as sent
+    conn.commit()                                                                   # saves changes
+    print(cur.rowcount, "rows updated.")                                            # terminal notification to inform how many rows (repos) have been altered
     return load_home()
 
 
@@ -98,20 +109,21 @@ def load_home():
     data = []
     data_dups = []
     for row in data_init:
-        cur.execute("UPDATE duppr_pair SET repo=%s WHERE id=%s", (row[1].replace("'", ""), row[0],))
+        cur.execute("UPDATE duppr_pair SET repo=%s WHERE id=%s", (row[1].replace("'", ""), row[0],))    # if repo names have quotes, remove them.
         if row[15] != -1:               # don't display repos for which we've clicked "don't send comment"
             dup = 0
             for row_check in data:
                 if (row_check[1] == row[1]) & (row_check[15] != -1):
                     dup = 1
-                    if row_check[4] < row[4]:
-                        data_dups.append(row_check)
-                        data.remove(row_check)
-                        data.append(row)
-                        break
-                    else:
-                        data_dups.append(row)
-                        break
+                    if show_hide == "show":
+                        if row_check[4] < row[4]:
+                            data_dups.append(row_check)
+                            data.remove(row_check)
+                            data.append(row)
+                            break
+                        else:
+                            data_dups.append(row)
+                            break
             if dup == 0:
                 data.append(row)
     return render_template('interface.html', data=data, id="home", data_dups=data_dups)

@@ -12,6 +12,15 @@
         <button>Update</button>
       </form>
     <p><p>
+      {% if id == "home" %}
+      <form method=POST action="{{ url_for('show_hide_switch') }}">
+        <button value="hide" name="show_hide_button">Show only one pair per repo</button>
+      </form>
+      <form method=POST action="{{ url_for('show_hide_switch') }}">
+        <button value="show" name="show_hide_button">Show all pairs</button>
+      </form>
+      {% endif %}
+    <p>
     <button onclick="sortTable('score')">Sort by score</button>
     <button onclick="sortTable('timestamp')">Sort by timestamp</button>
     <button onclick="sortTable('repo')">Sort by repo</button>
