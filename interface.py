@@ -45,10 +45,26 @@ def update_db():
 
 
 # Switches between show and hide mode
+
 @app.route('/show-hide', methods=['POST'])
 def show_hide_switch():
     global show_hide
     show_hide = request.form['show_hide_button']
+    return load_home()
+
+
+@app.route('/change-top-pair', methods=['POST'])
+def change_toppair():
+    repo_id = request.form['move']
+    cur.execute("UPDATE duppr_pair SET toppair=-1 WHERE id=%s", (repo_id,))     # save notes to db
+    cur.execute("SELECT * FROM duppr_pair WHERE id=%s", (repo_id,))
+    row = cur.fetchall()
+    cur.execute("SELECT * FROM duppr_pair")
+    data = cur.fetchall()
+    for row_check in data:
+        if (row[0][0] != row_check[0]) & (row[0][1] == row_check[1]):
+            cur.execute("UPDATE duppr_pair SET toppair=0 WHERE id=%s", (row_check[0],))
+    conn.commit()
     return load_home()
 
 
@@ -78,6 +94,34 @@ def send_comment():
     return load_home()
 
 
+# Finds & marks top pair
+
+@app.route('/top-pair')
+def top_pair(data):
+    data_check = data
+    for row in data:
+        if row[15] == 0:            # if the pair isn't in the "don't send comment" section
+            if row[21] != -1:       # if this pair hasn't been chosen manually for this repo
+                for row_check in data_check:
+                    if (row[0] != row_check[0]) & (row[1] == row_check[1]) & (row_check[21] != -1) & (row_check[15] != -1):
+                        if (row_check[21] == 1) & (row[4] > row_check[4]):
+                            cur.execute("UPDATE duppr_pair SET toppair=1 WHERE id=%s", (row[0],))
+                            cur.execute("UPDATE duppr_pair SET toppair=0 WHERE id=%s", (row_check[0],))
+                        if (row[21] == 1) & (row[4] < row_check[4]):
+                            cur.execute("UPDATE duppr_pair SET toppair=0 WHERE id=%s", (row[0],))
+                            cur.execute("UPDATE duppr_pair SET toppair=1 WHERE id=%s", (row_check[0],))
+                    elif row_check[21] == -1:
+                        cur.execute("UPDATE duppr_pair SET toppair=0 WHERE id=%s", (row[0],))
+        elif row[15] == -1:
+            cur.execute("UPDATE duppr_pair SET toppair=0 WHERE id=%s", (row[0],))
+        else:
+            for row_check in data_check:
+                if row[1] == row_check[1]:
+                    cur.execute("UPDATE duppr_pair SET toppair=2 WHERE id=%s", (row_check[0],))
+    conn.commit()
+    return data
+
+
 # Runs upon clicking 'don't send comment.' Edits comment_sent col in db.
 # Adds repo (on home page) to rejects page/list.
 
@@ -102,32 +146,26 @@ def reset_send_comment():
     return load_reject_page()
 
 
+# Render homepage
+
 @app.route('/')
 def load_home():
-    cur.execute("SELECT * FROM duppr_pair")
-    data_init = cur.fetchall()
     data = []
     data_dups = []
-    for row in data_init:
+    cur.execute("SELECT * FROM duppr_pair")
+    data_init = cur.fetchall()
+    data_init = top_pair(data_init)
+    for row in data_init:               # loop through pr pairs (rows)
         cur.execute("UPDATE duppr_pair SET repo=%s WHERE id=%s", (row[1].replace("'", ""), row[0],))    # if repo names have quotes, remove them.
         if row[15] != -1:               # don't display repos for which we've clicked "don't send comment"
-            dup = 0
-            for row_check in data:
-                if (row_check[1] == row[1]) & (row_check[15] != -1):
-                    dup = 1
-                    if show_hide == "show":
-                        if row_check[4] < row[4]:
-                            data_dups.append(row_check)
-                            data.remove(row_check)
-                            data.append(row)
-                            break
-                        else:
-                            data_dups.append(row)
-                            break
-            if dup == 0:
+            if row[21] == 1 or -1:
                 data.append(row)
+            elif (row[21] == 0) & (show_hide == "show"):
+                data_dups.append(row)
     return render_template('interface.html', data=data, id="home", data_dups=data_dups)
 
+
+# Render page with rejected PR pairs
 
 @app.route('/rejects')
 def load_reject_page():
