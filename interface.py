@@ -20,9 +20,10 @@ show_hide = 'show'
 def update_db():
     path = 'C:\\Users\\annik\\Documents\\REUSE\\interface\\dupPR'
     for filename in os.listdir(path):                       # for every file (repository) in the dupPR directory
-        path += '\\'
-        path += filename
-        with open(path) as tsv:
+        filepath = path
+        filepath += '\\'
+        filepath += filename
+        with open(filepath) as tsv:
             for line in csv.reader(tsv, delimiter="\t"):    # for every line (PR pair) in the current file
                 # check whether this pr pair has already been added to the db:
                 flag = 0
@@ -33,12 +34,12 @@ def update_db():
                         flag = 1
                 # if it has not, add it to the db:
                 if flag == 0:
-                    pr_pair_tuple = (line[0], int(line[1], 10), int(line[2], 10), float(line[3]), float(line[4]),
-                                     float(line[5]), float(line[6]), float(line[7]), float(line[8]),
-                                     float(line[9]), float(line[10]), float(line[11]), float(line[12]), float(line[13]))
+                    pr_pair_tuple = (line[0], int(line[1], 10), int(line[3], 10), float(line[4]), float(line[5]), float(line[6]),
+                                     float(line[7]), float(line[8]), float(line[9]), float(line[10]), float(line[11]), float(line[12]),
+                                     float(line[13]), float(line[14]), line[2])
                     cur.execute('INSERT INTO duppr_pair(repo, pr1, pr2, score, title, description, patch_content, patch_content_overlap, \
-                        changed_file, changed_file_overlap, location, location_overlap, issue_number, commit_message) \
-                        VALUES ("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s")', pr_pair_tuple)
+                        changed_file, changed_file_overlap, location, location_overlap, issue_number, commit_message, timestamp) \
+                        VALUES ("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s")', pr_pair_tuple)
     # save changes and reload page:
     conn.commit()
     return load_home()
@@ -53,18 +54,25 @@ def show_hide_switch():
     return load_home()
 
 
+@app.route('/set-toppair')
+def set_toppair(value, repo_id):
+    cur.execute("UPDATE duppr_pair SET toppair=%s WHERE id=%s", (value, repo_id,))
+    conn.commit()
+    return
+
+
 @app.route('/change-top-pair', methods=['POST'])
 def change_toppair():
     repo_id = request.form['move']
-    cur.execute("UPDATE duppr_pair SET toppair=-1 WHERE id=%s", (repo_id,))     # save notes to db
-    cur.execute("SELECT * FROM duppr_pair WHERE id=%s", (repo_id,))
-    row = cur.fetchall()
-    cur.execute("SELECT * FROM duppr_pair")
-    data = cur.fetchall()
-    for row_check in data:
-        if (row[0][0] != row_check[0]) & (row[0][1] == row_check[1]):
-            cur.execute("UPDATE duppr_pair SET toppair=0 WHERE id=%s", (row_check[0],))
-    conn.commit()
+    set_toppair(-1, repo_id)
+    # cur.execute("SELECT * FROM duppr_pair WHERE id=%s", (repo_id,))
+    # row = cur.fetchall()
+    # cur.execute("SELECT * FROM duppr_pair")
+    # data = cur.fetchall()
+    # for row_check in data:
+    #     if (row[0][0] != row_check[0]) & (row[0][1] == row_check[1]):
+    #         set_toppair(0, row_check[0])
+    # conn.commit()
     return load_home()
 
 
@@ -77,6 +85,57 @@ def notes():
     cur.execute("UPDATE duppr_pair SET notes=%s WHERE id=%s", (note, repo_id,))     # save notes to db
     conn.commit()                                                                   # save changes
     return load_home()
+
+
+# Finds & marks top pair
+
+@app.route('/top-pair')
+def top_pair():
+    cur.execute("SELECT * FROM duppr_pair ORDER BY score DESC")
+    data_sorted = cur.fetchall()
+    for row in data_sorted:
+        # make a new list, with all the PR pairs from this repo
+        data_check = []
+        top_already_chosen = 0
+        for row_check in data_sorted:
+            # if both pairs are from the same repo, and if the one we're looking at isn't discarded
+            #   & if the one we're looking at has been chosen as top
+            #     then mark that for this repo, we have a manually chosen pair
+            #   regardless, add the pair we're looking at to the list (of PR pairs within this repo)
+            if (row_check[1] == row[1]) & (row_check[15] != -1):
+                if row_check[20] == -1:
+                    top_already_chosen = 1
+                data_check.append(row_check)
+
+        # if the current pair has not been used or discarded (row[15]==0) and has not been chosen as top
+        #   if it is the most recent pair, then mark as 1 (toppair by timestamp)
+        #   if it's not, then mark as 0 (default)
+        if (row[15] == 0) & (top_already_chosen == 0):
+            if row == data_check[0]:
+                set_toppair(1, row[0])
+            else:
+                set_toppair(0, row[0])
+
+        # if it *has* been discarded and there isn't already a comment sent to this repo
+        # set toppair value to zero (default)
+        elif (row[15] == -1) & (row[20] != 2):
+            set_toppair(0, row[0])
+
+        # if it *has* been used (comment's been sent)
+        # set as top pair for this repo, update all others from this repo
+        elif row[15] == 1:
+            set_toppair(1, row[0])
+            data_check.remove(row)
+            for row_check in data_check:
+                set_toppair(2, row_check[0])
+
+        # if there is a pair in this repo that's been manually picked as top and this is not it
+        # set toppair value to zero (default)
+        elif (top_already_chosen == 1) & (row[20] != -1):
+            set_toppair(0, row[0])
+
+    conn.commit()
+    return data_sorted
 
 
 # Runs upon clicking 'send comment.' Edits comment_sent col in db.
@@ -92,35 +151,6 @@ def send_comment():
     conn.commit()                                                                   # saves changes
     print(cur.rowcount, "rows updated.")                                            # terminal notification to inform how many rows (repos) have been altered
     return load_home()
-
-
-# Finds & marks top pair
-
-@app.route('/top-pair')
-def top_pair(data):
-    data_check = data
-    for row in data:
-        if row[15] == 0:            # if the pair isn't in the "don't send comment" section
-            if row[21] != -1:       # if this pair hasn't been chosen manually for this repo
-                for row_check in data_check:
-                    if (row[0] != row_check[0]) & (row[1] == row_check[1]) & (row_check[21] != -1) & (row_check[15] != -1):
-                        if (row_check[21] == 1) & (row[4] > row_check[4]):
-                            cur.execute("UPDATE duppr_pair SET toppair=1 WHERE id=%s", (row[0],))
-                            cur.execute("UPDATE duppr_pair SET toppair=0 WHERE id=%s", (row_check[0],))
-                        if (row[21] == 1) & (row[4] < row_check[4]):
-                            cur.execute("UPDATE duppr_pair SET toppair=0 WHERE id=%s", (row[0],))
-                            cur.execute("UPDATE duppr_pair SET toppair=1 WHERE id=%s", (row_check[0],))
-                    elif row_check[21] == -1:
-                        cur.execute("UPDATE duppr_pair SET toppair=0 WHERE id=%s", (row[0],))
-        elif row[15] == -1:
-            cur.execute("UPDATE duppr_pair SET toppair=0 WHERE id=%s", (row[0],))
-        else:
-            cur.execute("UPDATE duppr_pair SET toppair=1 WHERE id=%s", (row[0],))
-            for row_check in data_check:
-                if (row[0] != row_check[0]) & (row[1] == row_check[1]):
-                    cur.execute("UPDATE duppr_pair SET toppair=2 WHERE id=%s", (row_check[0],))
-    conn.commit()
-    return data
 
 
 # Runs upon clicking 'don't send comment.' Edits comment_sent col in db.
@@ -153,15 +183,17 @@ def reset_send_comment():
 def load_home():
     data = []
     data_dups = []
-    cur.execute("SELECT * FROM duppr_pair")
-    data_init = cur.fetchall()
-    data_init = top_pair(data_init)
+    data_init = top_pair()
     for row in data_init:               # loop through pr pairs (rows)
         cur.execute("UPDATE duppr_pair SET repo=%s WHERE id=%s", (row[1].replace("'", ""), row[0],))    # if repo names have quotes, remove them.
         if row[15] != -1:               # don't display repos for which we've clicked "don't send comment"
-            if row[21] == 1 or -1:
+            if row[20] == 1:
                 data.append(row)
-            elif (row[21] == 0 or 2) & (show_hide == "show"):
+            elif row[20] == -1:
+                data.append(row)
+            elif (row[20] == 0) & (show_hide == "show"):
+                data_dups.append(row)
+            elif (row[20] == 2) & (show_hide == "show"):
                 data_dups.append(row)
     return render_template('interface.html', data=data, id="home", data_dups=data_dups)
 

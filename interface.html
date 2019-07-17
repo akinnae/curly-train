@@ -22,7 +22,7 @@
     <button onclick="sortTable('score')">Sort by score</button>
     <button onclick="sortTable('timestamp')">Sort by timestamp</button>
     <button onclick="sortTable('repo')">Sort by repo</button>
-  <table id='tbl' border=1 width="125%">
+  <table id='tbl' border=1 width="135%">
     <!-- headings -->
     <tr>
       <th width="10%">repo</th>
@@ -31,6 +31,7 @@
       <th width="10%">Score</th>
       <th width="15%">Send comment?</th>
       <th width="20%">Notes</th>
+      <th width="10%">Timestamp</th>
       <th width="5%">title</th>
       <th width="5%">description</th>
       <th width="5%">patch content</th>
@@ -85,6 +86,8 @@
           <button value="{{row[1]}}" name="save_button">Save</button>
         </form>
       </td>
+      <!-- date/timestamp -->
+      <td>{{row[21]}}</td>
       <!-- FEATURE SCORE LIST -->
       <!-- title -->
       <td>{{row[5]}}</td>
@@ -121,9 +124,9 @@
       <td>{{row[4]}}</td>
       <!-- send/don't send comment buttons -->
       <td>
-        {% if row[21] == 2 %}
+        {% if row[20] == 2 %}
         Comment already sent to this repo.
-        {% elif row[21] == 0 %}
+        {% elif row[20] == 0 %}
         There is already a pair from this repo.
         <form method=POST action="{{ url_for('change_toppair')}}">
           <button value="{{row[0]}}" name="move">Choose this one instead</button>
@@ -142,6 +145,8 @@
           <button value="{{row[1]}}" name="save_button">Save</button>
         </form>
       </td>
+      <!-- date/timestamp -->
+      <td>{{row[21]}}</td>
       <!-- FEATURE SCORE LIST -->
       <!-- title -->
       <td>{{row[5]}}</td>
@@ -172,7 +177,7 @@
     function sortTable(sort_by) {
       var table, rows, switching, i, x, y, n, shouldSwitch, dir, switchcount = 0;
       if(sort_by == "score"){n = 3;}                //sort by sim. score
-        else if (sort_by == "timestamp") {n = 2;}   //sort by timestamp
+        else if (sort_by == "timestamp") {n = 4;}   //sort by timestamp
         else{ n = 0; }                              //sort by repo
       if(n == 0){dir = "asc";}
         else{dir = "desc";}
