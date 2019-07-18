@@ -97,7 +97,7 @@ def notes():
 
 @app.route('/top-pair')
 def top_pair():
-    cur.execute("SELECT * FROM duppr_pair ORDER BY score DESC")
+    cur.execute("SELECT * FROM duppr_pair ORDER BY timestamp DESC")
     data_sorted = cur.fetchall()
     for row in data_sorted:
         # make a new list, with all the PR pairs from this repo
