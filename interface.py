@@ -44,9 +44,10 @@ def update_db():
     data = cur.fetchall()
     for row in data:
         cur.execute("UPDATE duppr_pair SET repo=%s WHERE id=%s", (row[1].replace("'", ""), row[0],))    # if repo names have quotes, remove them.
-        cur.execute("UPDATE duppr_pair SET repo=%s WHERE id=%s", (row[21].replace("'", ""), row[0],))   # if timestamps have quotes, remove them.
+        cur.execute("UPDATE duppr_pair SET timestamp=%s WHERE id=%s", (row[21].replace("'", ""), row[0],))   # if timestamps have quotes, remove them.
     # save changes and reload page:
     conn.commit()
+    load_home()
     return load_home()
 
 
@@ -147,10 +148,11 @@ def top_pair():
 
 @app.route('/home-sc', methods=['POST'])
 def send_comment():
-    repo_id = request.form['send_comment_button']                                   # gets repo name from value of send_comment_button button
-    cur.execute("SELECT pr1 FROM duppr_pair WHERE id=%s", (repo_id,))               # gets pr number
-    pr = cur.fetchall()
-    pr = int(pr[0][0], 10)                                                          # type as int
+    repo_id = request.form['send_comment_button']                                   # gets row id (in db) from value of send_comment_button button
+    cur.execute("SELECT * FROM duppr_pair WHERE id=%s", (repo_id,))                 # gets pr number & repo name
+    pr_info = cur.fetchall()
+    pr = int(pr_info[0][2], 10)                                                     # type as int
+    repo = pr_info[0][1]
     PRcommenter.make_github_comment(repo, pr, "")                                   # sends comment
     cur.execute("UPDATE duppr_pair SET comment_sent=1 WHERE id=%s", (repo_id,))     # changes comment_sent value to 1 -- flags as sent
     conn.commit()                                                                   # saves changes
