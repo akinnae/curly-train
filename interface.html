@@ -12,6 +12,7 @@
         <button>Update</button>
       </form>
     <p><p>
+      <!-- show/hide additional pairs buttons -->
       {% if id == "home" %}
       <form method=POST action="{{ url_for('show_hide_switch') }}">
         <button type="submit" value="hide" name="show_hide_button">Show only one pair per repo</button>
@@ -19,6 +20,7 @@
       </form>
       {% endif %}
     <p>
+    <!-- table sorting option buttons -->
     <button onclick="sortTable('score')">Sort by score</button>
     <button onclick="sortTable('timestamp')">Sort by timestamp</button>
     <button onclick="sortTable('repo')">Sort by repo</button>
@@ -43,7 +45,7 @@
       <th width="5%">issue number</th>
       <th width="5%">commit message</th>
     </tr>
-    <!-- loop through rows (repos), showing db as a table on page -->
+    <!-- loop through rows (top pr pairs), showing db as a table on page -->
     {% for row in data %}
     <tr>
       <!-- repo name, links to repo page -->
@@ -112,6 +114,7 @@
       <!-- END FEATURE SCORE LIST -->
     </tr>
     {% endfor %}
+    <!-- list non-top-pairs, if "show" -->
     {% for row in data_dups %}
     <tr>
       <!-- repo name, links to repo page -->
@@ -174,53 +177,49 @@
     {% endfor %}
   </table>
 
+  <!-- function to sort the table by column -->
   <script>
     function sortTable(sort_by) {
       var table, rows, switching, i, x, y, n, shouldSwitch, dir, switchcount = 0;
-      if(sort_by == "score"){n = 3;}                //sort by sim. score
-        else if (sort_by == "timestamp") {n = 6;}   //sort by timestamp
-        else{ n = 0; }                              //sort by repo
+      if(sort_by == "score"){n = 3;}                // sort by sim. score
+        else if (sort_by == "timestamp") {n = 6;}   // sort by timestamp
+        else{ n = 0; }                              // sort by repo
       if(n == 0){dir = "asc";}
         else{dir = "desc";}
       table = document.getElementById("tbl");
       switching = true;
-      /*Make a loop that will continue until
-      no switching has been done:*/
+      // loop until no switching has been done:
       while (switching) {
-        //start by saying: no switching is done:
+        // start by saying: no switching is done:
         switching = false;
         rows = table.rows;
-        /*Loop through all table rows (except the
-        first, which contains table headers):*/
+        // loop through table rows (except headers):
         for (i = 1; i < (rows.length - 1); i++) {
-          //start by saying there should be no switching:
+          // start by saying there should be no switching:
           shouldSwitch = false;
-          /*Get the two elements you want to compare,
-          one from current row and one from the next:*/
+          // get the two elements you want to compare, one from current row and one from the next:
           x = rows[i].getElementsByTagName("TD")[n];
           y = rows[i + 1].getElementsByTagName("TD")[n];
-          /*check if the two rows should switch place,
-          based on the direction, asc or desc:*/
+          // check if the two rows should switch place, based on the direction, asc or desc:
           if (dir == "asc") {
             if (x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase()) {
-              //if so, mark as a switch and break the loop:
+              // if so, mark as a switch and break the loop:
               shouldSwitch= true;
               break;
             }
           } else {
             if (x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase()) {
-              //if so, mark as a switch and break the loop:
+              // if so, mark as a switch and break the loop:
               shouldSwitch = true;
               break;
             }
           }
         }
         if (shouldSwitch) {
-          /*If a switch has been marked, make the switch
-          and mark that a switch has been done:*/
+          // if a switch has been marked, switch and mark that it's been done:
           rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
           switching = true;
-          //Each time a switch is done, increase this count by 1:
+          // each time a switch is done, increase this count by 1:
           switchcount ++;
         }
       }
