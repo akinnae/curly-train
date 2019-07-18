@@ -30,7 +30,7 @@ def update_db():
                 cur.execute("SELECT * FROM duppr_pair")
                 check = cur.fetchall()
                 for check_line in check:
-                    if (check_line[1] == line[0]) & (check_line[2] == line[1]) & (check_line[3] == line[2]):
+                    if (check_line[1] == line[0]) & (check_line[2] == line[1]) & (check_line[3] == line[3]):
                         flag = 1
                 # if it has not, add it to the db:
                 if flag == 0:
@@ -40,6 +40,11 @@ def update_db():
                     cur.execute('INSERT INTO duppr_pair(repo, pr1, pr2, score, title, description, patch_content, patch_content_overlap, \
                         changed_file, changed_file_overlap, location, location_overlap, issue_number, commit_message, timestamp) \
                         VALUES ("%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s", "%s")', pr_pair_tuple)
+    cur.execute("SELECT * FROM duppr_pair")
+    data = cur.fetchall()
+    for row in data:
+        cur.execute("UPDATE duppr_pair SET repo=%s WHERE id=%s", (row[1].replace("'", ""), row[0],))    # if repo names have quotes, remove them.
+        cur.execute("UPDATE duppr_pair SET repo=%s WHERE id=%s", (row[21].replace("'", ""), row[0],))   # if timestamps have quotes, remove them.
     # save changes and reload page:
     conn.commit()
     return load_home()
@@ -65,14 +70,14 @@ def set_toppair(value, repo_id):
 def change_toppair():
     repo_id = request.form['move']
     set_toppair(-1, repo_id)
-    # cur.execute("SELECT * FROM duppr_pair WHERE id=%s", (repo_id,))
-    # row = cur.fetchall()
-    # cur.execute("SELECT * FROM duppr_pair")
-    # data = cur.fetchall()
-    # for row_check in data:
-    #     if (row[0][0] != row_check[0]) & (row[0][1] == row_check[1]):
-    #         set_toppair(0, row_check[0])
-    # conn.commit()
+    cur.execute("SELECT * FROM duppr_pair WHERE id=%s", (repo_id,))
+    row = cur.fetchall()
+    cur.execute("SELECT * FROM duppr_pair")
+    data = cur.fetchall()
+    for row_check in data:
+        if (row[0][0] != row_check[0]) & (row[0][1] == row_check[1]):
+            set_toppair(0, row_check[0])
+    conn.commit()
     return load_home()
 
 
@@ -150,6 +155,7 @@ def send_comment():
     cur.execute("UPDATE duppr_pair SET comment_sent=1 WHERE id=%s", (repo_id,))     # changes comment_sent value to 1 -- flags as sent
     conn.commit()                                                                   # saves changes
     print(cur.rowcount, "rows updated.")                                            # terminal notification to inform how many rows (repos) have been altered
+    load_home()
     return load_home()
 
 
@@ -162,6 +168,7 @@ def no_send_comment():
     cur.execute("UPDATE duppr_pair SET comment_sent=-1 WHERE id=%s", (repo_id,))    # changes comment_sent value to -1 (flags for moving to another list)
     conn.commit()                                                                   # saves changes
     print(cur.rowcount, "rows updated.")                                            # terminal notification to inform how many rows (repos) have been altered
+    load_home()
     return load_home()
 
 
@@ -185,7 +192,6 @@ def load_home():
     data_dups = []
     data_init = top_pair()
     for row in data_init:               # loop through pr pairs (rows)
-        cur.execute("UPDATE duppr_pair SET repo=%s WHERE id=%s", (row[1].replace("'", ""), row[0],))    # if repo names have quotes, remove them.
         if row[15] != -1:               # don't display repos for which we've clicked "don't send comment"
             if row[20] == 1:
                 data.append(row)
