@@ -28,12 +28,12 @@
     <!-- headings -->
     <tr>
       <th width="10%">repo</th>
+      <th width="15%">Timestamp</th>
       <th width="5%">pr1</th>
       <th width="5%">pr2</th>
       <th width="10%">Score</th>
       <th width="15%">Send comment?</th>
       <th width="20%">Notes</th>
-      <th width="15%">Timestamp</th>
       <th width="5%">title</th>
       <th width="5%">description</th>
       <th width="5%">patch content</th>
@@ -50,6 +50,8 @@
     <tr>
       <!-- repo name, links to repo page -->
       <td><a href="https://github.com/{{row[1]}}">{{row[1]}}</a></td>
+      <!-- date/timestamp -->
+      <td>{{row[21]}}</td>
       <!-- PR #1, links to PR1 page -->
       <td><a href="https://github.com/{{row[1]}}/pull/{{row[2]}}">{{row[2]}}<a/></td>
       <!-- PR #2, links to PR2 page -->
@@ -88,8 +90,6 @@
           <button value="{{row[1]}}" name="save_button">Save</button>
         </form>
       </td>
-      <!-- date/timestamp -->
-      <td>{{row[21]}}</td>
       <!-- FEATURE SCORE LIST -->
       <!-- title -->
       <td>{{row[5]}}</td>
@@ -119,6 +119,8 @@
     <tr>
       <!-- repo name, links to repo page -->
       <td><a href="https://github.com/{{row[1]}}">{{row[1]}}</a></td>
+      <!-- date/timestamp -->
+      <td>{{row[21]}}</td>
       <!-- PR #1, links to PR1 page -->
       <td><a href="https://github.com/{{row[1]}}/pull/{{row[2]}}">{{row[2]}}<a/></td>
       <!-- PR #2, links to PR2 page -->
@@ -149,8 +151,6 @@
           <button value="{{row[1]}}" name="save_button">Save</button>
         </form>
       </td>
-      <!-- date/timestamp -->
-      <td>{{row[21]}}</td>
       <!-- FEATURE SCORE LIST -->
       <!-- title -->
       <td>{{row[5]}}</td>
@@ -181,8 +181,8 @@
   <script>
     function sortTable(sort_by) {
       var table, rows, switching, i, x, y, n, shouldSwitch, dir, switchcount = 0;
-      if(sort_by == "score"){n = 3;}                // sort by sim. score
-        else if (sort_by == "timestamp") {n = 6;}   // sort by timestamp
+      if(sort_by == "score"){n = 4;}                // sort by sim. score
+        else if (sort_by == "timestamp") {n = 1;}   // sort by timestamp
         else{ n = 0; }                              // sort by repo
       if(n == 0){dir = "asc";}
         else{dir = "desc";}
