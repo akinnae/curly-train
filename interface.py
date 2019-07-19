@@ -34,12 +34,14 @@ from flaskext.mysql import MySQL
 import mysql.connector
 import csv
 import os
+import platform
 import PRcommenter
 app = Flask(__name__)
 
-
 # Connect to MySQL database
-conn = mysql.connector.connect(user='root', password='***.', host='localhost', database='repolist', port='3306')
+with open('input/mysqlParams.txt') as f:
+    MYSQL_USER, MYSQL_PASS, MYSQL_HOST = f.read().splitlines()
+conn = mysql.connector.connect(user=MYSQL_USER, password=MYSQL_PASS, host=MYSQL_HOST, database='repolist', port='3306')
 cur = conn.cursor()
 # Create flag for showing all PR pairs vs one per repo
 show_hide = 'hide'
@@ -52,12 +54,20 @@ show_hide = 'hide'
 def update_db():
     # get the current date
     date = (datetime.now() - timedelta(2)).isoformat()
-    path = 'C:\\Users\\annik\\Documents\\REUSE\\interface\\dupPR'
+    if platform.system() == 'Windows':
+        path = 'C:\\Users\\annik\\Documents\\REUSE\\interface\\dupPR'
+    elif platform.system() =='Linux':
+        path = '/DATA/luyao'
+    else:
+        path = '/Users/shuruiz/Work/researchProjects'
     # for every file (repository) in the dupPR directory
     for filename in os.listdir(path):
         # find path to this file
         filepath = path
-        filepath += '\\'
+        if platform.system() == 'Windows':
+            filepath += '\\'
+        else:
+            filepath += '/'
         filepath += filename
         # open this file
         with open(filepath) as tsv:
