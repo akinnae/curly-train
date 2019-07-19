@@ -29,6 +29,7 @@
 #
 
 from flask import Flask, redirect, request, render_template
+from datetime import datetime, timedelta
 from flaskext.mysql import MySQL
 import mysql.connector
 import csv
@@ -41,13 +42,16 @@ app = Flask(__name__)
 conn = mysql.connector.connect(user='root', password='***.', host='localhost', database='repolist', port='3306')
 cur = conn.cursor()
 # Create flag for showing all PR pairs vs one per repo
-show_hide = 'show'
+show_hide = 'hide'
 
 
 # Updates database by parsing files
+# Removes pairs if they're 2+ days old
 
 @app.route('/update-db', methods=['POST'])
 def update_db():
+    # get the current date
+    date = (datetime.now() - timedelta(2)).isoformat()
     path = 'C:\\Users\\annik\\Documents\\REUSE\\interface\\dupPR'
     # for every file (repository) in the dupPR directory
     for filename in os.listdir(path):
@@ -68,8 +72,8 @@ def update_db():
                     # if they share the same repo name, pr1 name, and pr2 name, flag as already added
                     if (check_line[1] == line[0]) & (check_line[2] == line[1]) & (check_line[3] == line[3]):
                         flag = 1
-                # if it has not already been added, add it to the db:
-                if flag == 0:
+                # if it has not already been added, and if it is newer than 2 days, add it to the db:
+                if (flag == 0) & (date < line[2]):
                     pr_pair_tuple = (line[0], int(line[1], 10), int(line[3], 10), float(line[4]), float(line[5]), float(line[6]),
                                      float(line[7]), float(line[8]), float(line[9]), float(line[10]), float(line[11]), float(line[12]),
                                      float(line[13]), float(line[14]), line[2])
@@ -82,6 +86,9 @@ def update_db():
     for row in data:
         cur.execute("UPDATE duppr_pair SET repo=%s WHERE id=%s", (row[1].replace("'", ""), row[0],))        # if repo names have quotes, remove them.
         cur.execute("UPDATE duppr_pair SET timestamp=%s WHERE id=%s", (row[21].replace("'", ""), row[0],))  # if timestamps have quotes, remove them.
+        # delete any pairs that are older than 2 days if they haven't had a comment sent to them yet
+        if (date > row[21]) & (row[15] != 1):
+            cur.execute("DELETE FROM duppr_pair WHERE id=%s", (row[0],))
     # save changes and reload page:
     conn.commit()
     load_home()
